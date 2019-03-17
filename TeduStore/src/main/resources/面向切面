@@ -1,0 +1,118 @@
+实现SQL语句的动态操作
+
+修改收获地址时回显数据
+
+// 对数据库的编程操作
+
+pl/sql
+delimiter $$
+created procedure updateItem (poid int);
+begin
+ 	update
+ 	 t_orderitem
+ 	set
+ 	 paymentstatus=1
+ 	 where
+ 	  orderid=poid
+ end $$
+调用格式:
+ call 方法名(updateItem)(传送的参数);
+
+
+delimiter $$ 
+create procedure updateBmi(nid int)
+begin
+ update bmi set ename="王二" where id=nid ;
+end$$
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Spring有两大机制:
+IOC(把管理与创建对象的权利交给容器,这种控制权的转移叫做控制反转)
+与AOP
+AOP(面向切面):它是一种横向逻辑的扩展,是OOP的重要补充部分,
+   不改变原有业务逻辑基础,对横向逻辑进行扩展
+环境配置:
+{导入jar包aspectjrt,aspectjweaver,spring-aop}
+配置配置文件 : {配置组件扫描,及注释解析}
+
+在AOP切面逻辑类用到的控制反转的注释:
+@Component与@Aspect
+通知:
+<!--解析注解:对切面类通知注释进行解析;当不用通知注释时,应去掉 -->
+ <!-- <aop:aspectj-autoproxy></aop:aspectj-autoproxy> -->
+//@Before("bean(所切入的业务逻辑类的依赖注入ID)")
+1,前置通知:在执行业务逻辑之前执行的切面方法
+	在业务层执行之前,执行AOP代码
+
+//@After("bean(iUserService)")
+2,后置通知1:在执行业务逻辑之后执行的切面方法
+	无论是否发生异常,都回执行的方法
+
+//@AfterReturning("bean(iUserService)")
+3,后置通知2:在执行业务逻辑之后执行的切面方法
+     //业务逻辑方法不发生异常,才会执行的方法
+
+//@AfterThrowing("bean(iUserService)")
+4,后置通知3:业务逻辑发生异常时,抛出异常
+	//如密码和用户名输入错误
+
+//@Around("bean(iUserService)")//bean定义切点
+5:环绕通知,就是在业务方法之前,
+	//之后都可以执行的方法!
+	/*注意:---必须要有返回值;
+	 * 		-----必须定义参数---ProceedingJoinPoint
+	 * 		-----返回方法的返回值:
+	 */
+public Object test5
+		(ProceedingJoinPoint pp) 
+							throws Throwable {
+		//是否发生异常都会发生的输出
+		System.out.println("环绕之前通知!");
+		long time1=System.currentTimeMillis();
+		Object obj=pp.proceed();
+		//不发生异常时执行下面输出
+		System.out.println("环绕之后通知!");
+	  long time2=System.currentTimeMillis();
+		long time=time2-time1;
+		System.out.println(time);
+		return obj;
+	}
+
+ 1:切点:能够执行切面逻辑方法的业务逻辑方法叫做切点;
+2:连接点:业务逻辑的所有方法叫做切点
+
+
+切点的定义:
+	1:beand定义格式
+		@AfterThrowing("bean(userService)")
+		@AfterThrowing("bean(userService)||bean(addressService)")
+	2:定义格式;
+		//@Around("within(cn.tedu.store.service.*Service)")
+		//@Around("within(cn.tedu.store.service.*Service)")
+	3:方法定义格式
+	//*代表方法的返回类型
+	//..代表方法参数
+	@Around("execution(* cn.tedu.store.service.UserService.login(..))")
+
+
+/**(!------物以类聚,人以群分------!)
+	 * 为什么在执行业务逻辑类时可以把切面逻辑切进来?
+	 * spring-aop生了一个代理类:在程序运行的过程中动态生成的代理类!
+	 * 代理类与业务逻辑类有共同的父接口,
+	 * 且代理类中有业务类的全部方法,
+	 * 代理类创建业务逻辑类对象和切面类对象,
+	 * 根据对切面类中方法前的通知解析,来执行调用切面类中方法的先后顺序
+	 * 而代理类就是最后获取实现接口的实现类 
+	 */
+
+
+
+
+
+
+
+
+
+
+
+
+

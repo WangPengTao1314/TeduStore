@@ -1,0 +1,921 @@
+控制器的5个请求方法
+/user/showRegister.do   //显示页面功能
+请求参数：无
+请求方式：get
+响应方式：转发
+
+/user/checkUsername.do     //验证用户名
+请求参数:username=admin
+请求方式:get
+响应方式:responseBody
+
+/user/checkEmail.do     //验证邮箱
+请求参数：email=admin@tedu.cn
+请求方式：GET
+响应方式：ResponseBody
+
+/user/checkPhone.do     //验证电话
+请求参数：13800138000
+请求方式：GET
+响应方式：ResponseBody
+
+/user/register.do    //用户注册
+请求参数:form数据
+请求方式:POST
+响应方式:ResponseBody
+
+创建UserController类，定义显示页面的方法
+@RequestMapping("/showRegister.do")
+public String showRegister(){
+return "register";
+}
+修改register.html为register.jsp
+
+定义处理用户名失去焦点的异步请求的控制器方法
+定义通用的响应结果类ResponseResult,定义到bean包中
+public class ResponseResult{
+private Integer state;
+private String message;
+private T data;
+//set/get
+//构造方法
+//
+}
+
+@RequestMapping("/checkUsername.do")
+@ResponseBody
+public ResponseResult checkUsername(String username){
+//调用业务层checkUsername()方法
+if(userService.checkUsername(username)){
+rr.setState(0);
+rr.setMessage("用户名已存在");
+}
+//如果返回true,状态码设为0，信息：用户名已存在
+否则，状态码：1，信息：用户名可以使用
+
+else{
+rr.setState(1);
+rr.setMessage("用户名可以使用");
+return rr;
+}
+}
+
+###页面
+
+${pageContext.request.contextpath}替换../方法
+
+邮箱和电话号码失去焦点
+页面的邮箱和电话异步提交都是一样的
+
+##用户注册-提交按钮的控制器方法
+//uname  upwd email phone
+public  ResopnseResult<Void> register(
+@RequestParam("uname")String username,
+@RequestParam("upwd")String password,
+String email,String phone){
+//调用业务层方法
+//如果没有异常，调用插入的方法
+//如果有异常，封装信息到rr对象
+}
+
+提交按钮界面
+
+##3.用户管理-登录
+###3.1登录-持久层
+###3.2登录-业务层
+在IUserService接口中定义方法，方法名login
+user login(String username,String password)
+
+定义异常类UserNotFoundException和passwordNotMatchException
+在UserService类中实现login方法
+public User login(String username,String password){
+//1.调用持久层selectByUsername()方法，返回值User
+//2.判断user对象是否为null
+//3.如果为null,抛出异常
+userNotFoundException
+//4.如果不为null,从user对象中取出password,用password和页面输入的password比较；
+//5.如果是true,1,返回user
+//6.如果是false,抛出异常
+}
+
+
+在usercontroller类定义login方法
+public ResponseResult<Void> login(String username,String password){
+//1.创建ResponseResult<Void>对象
+//2.
+try{
+调用业务层的login()
+//1 登录成功
+}
+//3.catch(Exception e){
+//0  e.getMessage
+}
+返回return rr;
+}
+
+##页面调整
+1.注册成功之后，跳转到登录
+2.在注册页面，点击"直接登录"，跳转到登录页面
+3.在登录页面，点击“新用户注册”，跳转到注册页面
+
+显示首页
+创建MainController类，定义showIndex方法，显示index.jsp页面
+@RequestMapping("/main")
+@Controller
+public class MainController{
+@RequestMapping("/showIndex.do")
+public String showIndex(){
+return "index";
+}
+
+}
+
+
+调整页面
+1.登录成功，跳转到首页
+2.在index.jsp页，显示用户名，在*前面
+${user.username}
+3.如果没有显示用户名,显示登录，如果显示用户名，登录变成退出
+首先引入jstl标签库
+4.点击登录，跳转到登录页面
+<c:if test="$(user==null)">
+登录
+</c:if>
+<c:if test="$(user!=null)"
+<li><a></a></li>
+
+退出
+让session失效，并且到首页
+在UserController，定义方法，完成退出的功能
+@RequestMapping("/exit.do")
+public String exit(HttpSession session){
+//让session无条件失效
+session.invalidate()
+return "redirect:../main/showIndex.do";
+}
+
+6.截取header.jsp,在index.jsp页面包含header.jsp
+7.点击“登录用户名”，显示安全管理的页面（修改密码）
+1.在UserController中定义方法,方法名showPassword
+2.把HTML文件改成person_password.jsp
+
+
+##5安全管理
+##5.1安全管理的持久层
+在UserMapping接口中定义方法
+void update(User user)
+在UserMapper.xml文件中，定义update节点，完成update语句
+<update id="update" parameterType="cn.tedu.store.bean.User">
+update t_user
+set <if test="password!=null">
+password=#{password},
+</if>
+<if test="username!=null">
+username=#{username},
+</if>
+where id=#{id}
+</update>
+##5.1安全管理-持久层
+在UserMapper接口定义方法
+User selectById(Integer id);
+在UserMapper.XML文件中定义select节点，完成通过id查询用户的功能
+<select id="selectById" resultType="cn.tedu.store.bean.User">
+select
+
+where id=#{id}
+
+</select>
+测试
+##5.2安全管理-业务层
+在IuerService接口中定义方法
+void changePassword(Integer id,String oldPwd,String newPwd);
+在UserService类中实现方法
+public void changePassword(Integer id,String oldPwd,String newPwd){
+
+}
+
+##6用户管理-个人信息
+###6.1个人信息-显示个人信息
+显示个人信息页面的url
+/user/showPersonInfo.do
+请求参数：无
+请求方式：GET
+响应方式：转发
+
+
+
+6.2个人信息，修改
+6
+
+在UserController类中定义方法
+@ResquestMapping("/showPersonInfo.do")
+public String showPersonInfo(){
+return "personInfo";
+}
+把personage.html改成personInfo.jsp
+###6.2个人信息-修改个人信息
+调整页面
+1）在安全管理（修改密码页面），给我的信息添加连接，连接到showPersonInfo.do;还要在左边栏，
+给我的信息
+把安全管理的两个连接，分别连接到showPassword.do
+2）personInfo.jsp页面，把header.jsp包含进来
+
+3）左边栏片段:left.jsp,分别在personInfo.jsp和person_password.jsp页面包含进去
+
+.2.1修改个人信息，持久层
+##6.2.1修改个人信息-业务层
+在IUserService定义方法
+void updateUser(Integer id,String username,Integer gender,String phone,String email);
+在UserService类中实现方法
+public void updateUser(Integer id,String username,Integer gender,String phone,String email){
+User user=new User();
+判断Username是否存在？
+User u1=userMapper.selectByUsername(username);
+判断是否为null
+如果u1=null
+user.setUsername(username);
+如果u1!=null
+    判断用户名是否为登录的用户名
+    User u2=userMapper.selectById(id);
+    如果u2!=null
+   if(u2.getUsername.equals(username)){
+   //不做操作
+   }else{
+   //抛出异常
+   }
+  
+    
+id,username,phone,email,gender
+userMapper.update(user);
+
+}
+
+测试
+
+修改session中的user对象
+session.setAttribute("user",user);
+session设置user对象，通过id查询得到user
+User user=userService.getUserById(this.getId(session));
+在业务层定义方法getUserById
+User getUserById(Integer id);
+public User getUserById(Integer id){
+return userMapper.selectById(id);
+}
+
+在页面ajax的state==1,重新显示页面
+if(obj.state==1){
+location=".../user/showPersonInfo.do";
+}
+
+##登录拦截器
+Filter:web组件，由web容器管理
+Intercetor:spring框架组件  controller
+
+1.定义拦截器
+2.配置拦截器
+
+showRegister.do
+register.do
+checkEmail.do
+checkUsername.do
+checkPhone.do
+showLogin.do
+login.do
+showPassword.do
+password.do
+showPersonInfo.do
+personInfo.do
+
+
+#地址管理
+##创建表t_address
+create table t_address(
+id int auto_increment primary key ,
+uid int not null,
+recv_name varchar(50) not null,
+recv_province varchar(6) not null,
+recv_city varchar(6) not null,
+recv_area varchar(6) not null,
+recv_distric varchar(100) not null,
+recv_address varchar(100) not null,
+recv_phone varchar(32) not null,
+recv_tel varchar(32),
+recv_zip varchar(6),
+recv_tag varchar(10),
+create_user varchar(50),
+modified_user varchar(50),
+modified_time date
+)default charset=utf8
+
+
+
+##1.添加地址
+###1.1添加地址-显示页面
+定义控制器类
+@RequestMapping("/address")
+@Controller
+public class AddressController extends BaseController(){
+//显示地址的页面AddressAdmin.jsp页面
+@RequestMapping("/showAddress.do")
+public String showAddress(){
+return "addressAdmin";
+}
+
+}
+
+调整页面
+1.header.jsp
+2.left.jsp
+
+
+###1.2.1显示省的菜单
+1.显示省的菜单-持久层
+创建Province实体类
+public class Province{
+private Integer id;
+private String provinceCode;
+private String provinceName;
+//...
+}
+创建DictMapper接口,定义方法selectProvince;
+List<Province> selectProvince();
+
+新建DictMapper.xml(复制，改名，内容删除)保留mapper节点，namespace="。。。DictMapper"需要修改
+定义select节点，完成查询省的信息功能
+<select id="selectProvince" resultType="cn.tedu.store.bean.Province">
+select
+id,province_code as provinceCode,
+province_name as provinceName
+from t_dict_provinces
+</select>
+
+测试成功
+
+2.显示省列表的业务层
+创建接口,IDictService,并定义方法
+List<Province> getProvince();
+创建接口的实现类：DictService,实现方法
+@Resource
+private DictMapper dictMapper;
+public List<Province> getProvince(){
+return dictMapper.selectByProvince();
+}
+3.显示省列表-控制器层
+/dict/showProvince.do
+请求参数：无
+请求方式：GET
+响应方式：ResponseBody
+
+4.创建控制器类：DictController
+@Controller
+@ReguestMapper("/dict")
+public class DictController{
+private IDictService dicService;
+
+@RequestMapping("/showProvince.do")
+
+
+@ResponseBody
+public ResponseResult<List<Province>> showProvince(){
+1.创建rr对象
+2.调用业务层方法，返回集合
+3.把集合设置到rr对象中，
+4.return rr;
+}
+}
+
+测试
+
+
+4.页面;把json数据显示到省列表中
+
+
+
+1.持久层
+首先在bean中创建City类,在DictMapper接口定义方法
+List<City> selectCity(String provinceCode);
+在DictMapper.xml映射文件，定义select 节点，完成查询城市信息的功能
+<select id="selectCity" resultType="">
+select
+id,province_code as provinceCode,city_code as cityCode,city_name as cityName
+from t_dict_cities
+where
+province_code=#{provinceCode}
+</select>
+
+测试
+
+#显示城市信息-业务层
+
+在IDictService接口中定义方法
+List<City> getCity(String provinceCode);
+在DictService类中实现方法，返回持久层的集合
+3.显示城市信息-控制器层
+请求url
+/dict/showCity.do
+请求参数:provinceCode
+请求方式:GET
+
+响应方式:ResponseBody
+@
+@
+public ResponseResult<List<City>> show City(String provinceCode)
+{
+1.创建rr对象
+2.调用业务层方法
+3.把list数据设置到rr对象中
+4.return rr
+}
+城市信息
+
+
+DictMapper
+List<Area> selectArea(String cityCode);
+在DictMapper.xml中，定义select节点
+<select id="selectArea" resultType="">
+select
+from
+t_dict_areas
+where
+city_code=#{cityCode}
+</select>
+2.业务层
+在IDictService接口中定义方法
+List<Area> getArea(String cityCode);
+在DictService类中实现该方法，返回持久层的集合
+3.控制器层
+/dict/showArea.do
+请求参数：cityCode
+请求方式:GET
+响应方式:ResponseBody
+public ResponseResult<List<Area>> show Area(String cityCode){
+1.创建rr对象
+2.调用业务层方法，返回list
+3.把集合设置到rr对象中
+4.return rr;
+}
+4.页面
+function getAreas(cityCode){
+
+}
+
+省市区函数的调整
+getProvince(provinceCode,areaCode,cityCode)
+getCities(provinceCode,areaCode,cityCode)
+getAreas(citycode,areaCode)
+
+
+
+
+
+注意：
+在dictMapper接口中定义3个方法，获取省市区名字的方法
+String getProvinceNameByCode(String provinceCode);
+String selectCityNameByCode(String cityCode);
+String selectAreaNameByCode(String areaCode);
+在DictMapper.xml中定义3个节点，分别完成查询省市区名字的辅助
+<select id="selectProvinceNameByCode" resultType="java.lang.String">
+select
+province_name as provinceName
+from
+t_dict_provinces
+where
+province_code=#{provinceCode}
+</select>
+
+
+
+
+
+##1.3添加地址-持久层
+给t_address添加is_default;添加列的语句：
+alter table t_address add is_default 
+
+在mapper包中创建addressMapper接口，在接口中定义方法：
+void insert(Address address);
+新建addressMapper.xml文件（拷贝.xml文件，改名）
+定义insert节点,用来完成插入地址信息的功能
+<insert id="insert" parameterType="...">
+insert into t_address(id,uid,recv_name,recv_province,recv_city,recv_area,recv_district,
+recv_address,recv_phone,recv_tel,recv_zip,recv_tag,is_default,created_user,
+created_time,modified_user,modified_time)values(
+#{id},#{uid},#{recvName},#{recvProvince},#{recvCity},#{recvArea},#{recvDistrict},#{recvAddress},
+#{recvPhone},#{recvTel},#{recv_zip},#{recvTag},#{idDefault},#{createdUser},#{createdTime},#{modifiedUser},#{modifiedTime})
+</insert>
+
+
+
+
+
+/address/addAddress.do
+请求参数：9个框，session(uid)
+请求方式：POST
+响应方式：ResponseBody
+在AddressController定义方法
+public  responseResult<Void> addAddress(HttpSession session,
+@RequestParam("receiverName")String recvName,
+@RequestParam("recieverState")String recvProvince,
+@RequestParam("receiverCtiy")String recvCity,
+@RequestParam("receiverDistrict" string recvArea,
+@RequestParam("receiverAddress") string recvAddress,
+@RequestParam("receiverMobile") String recvPhone,
+@RequestParam("receiverPhone")String recvTel,
+@RequestParam("receiverZip")String recvZip,
+@RequestParam("addressName") String recvTag)){
+
+
+}
+
+
+
+
+
+
+$.ajax({
+			"url":"../address/addAddress.do",
+			"data":${"#addressForm"}.serialize(),
+			"type":"POST",
+			"dataType":"json",
+			"success":function(obj){
+				$("#receiverName").val();
+				$("#receiverState").val();
+				$("#receiverCity").val();
+				$("#receiverDistrict").val();
+				$("#receiverAddress").val();
+				$("#receiverMobile").val();
+			}
+		
+			});
+
+
+
+#2.显示收获人地址
+##2.1显示收货人地址持久层
+##2.2显示收货人地址业务层
+在IAddressService接口中定义方法
+List<Address> getAddressByUid(Integer uid);
+在AddressService类中实现方法
+public List<Address> getAddressByUid(Integer uid){
+返回持久层方法list
+}
+
+显示售货地址
+请求的url
+/address/getAddressByUid.do
+请求参数：session(uid)
+请求方式：GET
+响应方式：ResponseBody
+public ResponseResult<List<Address>> getAddressByUid(HttpSession session){
+
+}
+
+
+
+
+
+
+
+持久层
+在AddressMapper接口中定义2个方法：
+//把登录用户所有的is_default=0
+Integer setCancel(Integer uid);
+//把选中is_dafault=1
+Integer setDefault(Integer id);
+
+在addressMapper.xml文件中定义两个update节点
+<update id="setCancel">
+update
+t_address
+set
+is_default=0
+where
+uid=#{uid}
+</update>
+
+<update id="setDefalult">
+update
+t_address
+set
+is_default=1
+where
+id=#{id}
+</update>
+
+
+
+
+
+
+
+
+
+在IAddressService接口中定义方法
+void setDefault(Integer uid,Integer id);
+在AddressService类中实现方法
+public void setDefault(Integer uid,Integer id){
+1.调用持久层方法setCancel(),如果方法返回0，抛出异常RuntimeException("")
+2.调用持久层方法setDefault(),如果方法返回0，抛出异常RuntimeException("")
+}
+
+
+/address/setDefault.do
+请求参数：session(uid),id
+请求方式：GET
+响应方式：ResponseBody
+public responseResult<void> getDefault(HttpSession session,Integer id){
+1.rr
+2.
+}
+
+完成修改地址的回显功能
+回显收货地址的持久层
+在addressMapper接口中定义方法：
+Address selectAddressById(Integer id);
+在addressMapper.xml中，定义select节点，完成查询功能
+<select id="selectAddressById" resultType="">
+select
+id,uid,
+recv_name as recvName
+...
+from
+t_address
+where
+id=#{id}
+</select>
+
+
+
+IAddressService接口
+Address getAddressById(Integer id);
+AddressService类，返回持久层方法
+控制器层
+/address/getAddressById.do
+请求参数：id
+请求方式：GET
+响应方式：responseBody
+@
+@
+public ResponseResult<Address> getAddressBy(Integer id){
+}
+
+//显示省市区信息
+
+
+
+在addressMapper接口中定义方法
+void updateById(Address address);
+
+在AddressMapper.xml中，定义update节点，完成修改收获地址
+<update id="updateById" parameterType="">
+update
+t_address
+set
+recv_name=#{recvName},
+recv_province=#{recvProvince},
+recv_city=#{recvCity},
+recv_area=#{recvArea},
+recv_district=#{recvDistrict},
+recv_address=#{recvAddress},
+recv_phone=#{recvPhone},
+recv_tel=#{recvTel},
+recv_zip=#{recvZip},
+recv_tag=#{recvTag}
+where
+id=#{id}
+</update>
+
+修改收获人地址
+在IAddressService接口中定义方法
+void updateAddressById(Address address);
+在AddressService实现方法
+public void updateAddressById(Address address){
+//???从address中获取code,然后通过dictMapper提供的方法得到name,3个name连接成字符串
+//address.setRecvDistrict(???);
+//调用持久层方法updateById(Address);
+
+}
+
+
+修改收获地址
+请求url
+/address/updateAddress.do
+请求参数：form数据
+请求方式：POST
+响应方式：ResponseBody
+
+public ResponseResult<Void> updateAddress(){
+
+}
+
+
+
+页面调整
+在添加成功之后，调用getAllAddress
+
+
+4.删除
+4.1删除-持久层
+在AddressMapper接口中定义方法
+void deleteById(Integer id);
+
+在addressMapper.xml中，定义delete节点，完成删除操作
+<delete id="deleteById">
+delete from t_address
+where
+id=#{id}
+</delete>
+
+测试：
+
+IAddressService接口中定义方法
+void deleteAddress(Integer id);
+在AddressService类中实现方法，调用持久层方法，删除收获人地址信息、
+
+/address/deleteAddress.do
+请求参数：id
+请求方式：GET
+响应方式：ResponseBody
+
+public ResponseResult<Void> deleteAddress(Integer id){
+1.创建rr对象
+2.调用deleteAddress(id);
+3.rr 1 "删除成功"
+return rr;
+}
+
+
+
+
+
+
+
+二、宽带业务计费项目
+开发环境：Linux
+软件架构：Eclipse+Mysql+Tomcat
+项目描述：
+主要负责登录模块的用户登录、退出功能的开发；
+宽带业务管理模块的宽带资费管理功能的开发；
+技术描述： 
+      项目采用框架spring + mybatis + springMVC
+员工信息和产品信息利用Mysql数据库，通过SpringMVC整合Mybatis技术，实现存储、查询、修改、删除等操作。
+结合Json,利用Ajax技术实现异步操作
+前端使用Jquery+Css,并结合EL和JSTL表达式进行页面优化。
+
+首先要新建GoodsCategory实体类；
+定义接口GoodsCategryMapper,在接口中定义方法
+List<GoodsCategory> selectCategoryByParentId(@Param("parentId")Integer parentId,
+@Param("offset")integer offset,
+@Param("count")Integer count);
+
+新建GoodsCategoryMapper.xml(拷贝，改名);需要注意的地方：<mapper namespace="...GoodsCategoryMapper">;
+然后定义select节点
+<select id="selectCategoryByParentId" resultType="...">
+select
+id,parent_id as parentId, name,status,sort_order as sortOrder,
+is_parent as isParent,created_user as createdUser,
+created_time as createdTime,
+modified_user as modifiedUser,
+modified_time as modifiedTime
+from
+t_goods_category
+where
+parent_id=#{parentId}
+and
+status=1
+<if test="offset!=null">
+limit #{offset},#{count}
+</if>
+</select>
+
+
+
+
+
+
+新建业务层的接口
+IGoodsCategoryService,定义方法
+List<GoodsCategory> getCategoryByParentId(Integer parentId,Integer offset,Integer count);
+
+新建GoodsCategoryService实现类，在接口中实现方法，方法功能：调用持久层的方法，并返回集合
+测试
+
+调用业务层集合的方法
+public String showIndex(ModelMap map){
+1.调用getCateGoryByParentId(161，0，3),返回二级分类，赋值给computerList;
+2.遍历二级分类集合，得到二级分类的对象，从对象中得到id,调用getCategoryByParentId(id,null,null),返回三级分类集合，把三级分类的集合添加
+到category161List.
+
+3.把两个集合分别设置到map当中
+}
+
+
+热门商品的显示
+热门商品的显示-持久层
+新建Goods实体类
+新建GoodsMapper接口，在接口中定义方法
+List<Goods> selectBy(
+@Param("categoryId")Integer categoryId,
+@Param("offset")Integer offset,
+@Param("count")Integer count);
+新建GoodsMapper.xml(拷贝，该名);注意：
+<mapper namespace="goodsMapper">,定义select节点，
+完成select语句
+<select id="select" resultType="">
+select 
+id,category_id as category_id,
+item_type as itemType,
+title,
+sell_point as sellPoint,
+price,
+num,
+barcode,
+image,
+status,
+priority,
+create_user as createdUser,
+create_time as createdTime,
+modified_user as modifiedUser,
+modified_time as modifiedTime
+from t_goods
+where
+category_id=#{categoryId}
+add num>0 and status=1
+order by
+priority desc
+limit #{offset},#{count}
+
+</select>
+
+IGoodsService接口，在接口中定义方法
+List<Goods> getGoodsByCategoryId(Integer categoryId,integer offset,Integer count);
+新建GoodsService实现类,实现接口中的方法
+public class goodsService implements IGoodsService{
+private 
+}
+
+@Resource
+private IGoodsService goodsService;
+/mainController showIndex
+调用业务层方法，把返回的集合设置到Map中
+public String showIndex(ModelMap map){
+
+
+List<Goods> goodsList=goodsService.getGoodsByCategoryId(163,0,3);
+map.addAttribute("goodsList");
+return "index";
+}
+
+
+
+
+商品展示页
+显示商品的页面
+search.html,改为search.jsp;
+新建GoodsController类，定义showSearch方法，完成显示页面
+@RequestMapper("/goods")
+@controller
+public class GoodsController extends BaseController{
+@RequestMapping("/showSearch.do")
+public String showSearch(){
+return "search";
+}
+}
+
+
+
+
+
+
+##3.商品展示
+调整页面：index.jsp页面上给三级分类添加超链接
+##3.1商品展示-持久层
+
+
+
+商品详情--持久层
+GoodsMapper接口中定义方法
+Goods selectByGoodsId();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

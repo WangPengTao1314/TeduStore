@@ -1,0 +1,267 @@
+
+# 请问抽象类和接口的区别
+
+这是2个不同的概念，一个是class，一个是interface。
+
+语法区别：接口中所有的成员都是public的，属性都是static final的，方法都是abstract的，而抽象类中的成员的访问权限是没有约束的，属性也不一定是static final的，方法也可以是普通的方法；类与抽象类的关系是一对一的继承(extends)的关系，类与接口的关系是一对多的实现(implements)的关系；接口也继承(extends)接口，并且可以一继承多。
+
+抽象类的本质是一个类，类，表示“类别”，接口表示的是“标准、行为模式、行为能力”。
+
+类与抽象类是"子类 is a 抽象类"的关系，类与接口是"类 has 接口"的关系。
+
+~~~~~~~~~~~~~~~~~~~~
+有关内存问题:
+# 关于Resource leak
+
+leak表示内存泄漏甚至内存溢出！
+
+当尝试释放某个对象所占用的资源，却无法释放时，就会导致内存泄漏！例如使用某个流之后，没有调用`close()`方法！这样，会导致某个对象一直存在于内存中，已经不再使用，而JVM却认为这个对象是有用的，一直不销毁它！就会导致这个对象无谓的占用内存！
+
+内存泄漏的终级表现就是内存溢出！
+对于开发者而言，应该避免任何可能的内存泄漏，常规做法就是那些需要释放资源的对象，在使用完毕之后，及时释放，例如调用流的`close()`方法。
+
+单例的创建
+/**
+ * 单例的创建的第一种方式:懒汉式创建
+ * 		步骤:1在方法外用private static修饰new创建一个对象
+ * 		     2,私有化构造方法,	3:创建一个静态方法,返回创建的对象;
+ */
+  private static SingleInstancee s=new SingleInstancee();
+  
+  private  SingleInstancee() {
+	  
+   }
+	public static SingleInstancee getInstance() {
+		return s;
+	}
+
+
+/**
+	 * 单例的创建:饿汉时式创建
+	 * 	  1:有private static修饰创建一个对象与一个Object对象
+	 * 	  2:私有化构造方法,
+	 *    3:
+	 */
+	private static SingleInstance s;
+	private static Object ob=new Object();
+	private SingleInstance() {
+		
+	}
+	public static SingleInstance getInstance() {
+		synchronized (ob) {
+			if(s==null) {
+				s=new SingleInstance();
+			}
+		}
+		return s;
+	}
+利用工厂模式创建对象:
+
+方式:创建一个接口及其实现类, 再创建一个工厂类,在工厂中创建一个静态方法,返回接口类对象即可
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Spring管理的对象
+
+在Spring中对作用域的理解:
+
+## 【理解】 作用域/单例
+
+由Spring管理的对象默认情况下是单例的！也就是说，通过Spring反复获取同一个bean id的对象，都会是同一个对象！
+
+在配置`<bean>`时，添加`scope`属性可以配置对象的作用域，当取值为`singleton`时表示单例，当取值为`prototype`时表示非单例。
+
+如果是单例的，Spring会在加载配置文件时就创建对象，如果是非单例的，只会在`getBean()`时创建对象。
+
+ 
+## 【理解】 生命周期
+
+
+学习生命周期的目的在于了解某个类当被创建出来之后，会在哪些时候被调用哪些方法，并且，作为开发者，需要确定如何重写这些方法，使得重写的代码会在正确的时候被执行。
+
+由Spring管理的那些**单例的对象**也是可以确定生命周期方法的！
+
+具体的做法是自行在类中创建初始化方法和销毁方法，方法的名称可以自定义。然后，在Spring的配置文件中，在`<bean>`节点中添加`init-method`属性和`destroy-method`属性的配置，这2个属性的值都是自定义的方法的名称。
+Spring创建对象的生命周期:
+1: 在Spring容器中,加载配置文件时,
+根据bean中的ID与class来加载,创建一个对象,
+2:在根据bean中的init-method属性调用初始化方法对对象初始化
+3:Spring容器通过调用getBean()方法来或取对象,
+4:获取使用完对象后,根据bean中的destory-method属性,调用用销毁对象
+5:最后利用close()方法来释放内存空间,释放资源!
+
+
+通过spring为属性注入值: 
+   通常有两种
+     1:set注入:有一个实体类
+	
+	<
+	
+	工厂式注入:
+	<bean id="sudent" class="">
+	<property name="实体类中建立的对象名字" ref="实体类中注入的beanID">,
+	</property>
+	</bean>
+	<bean id="" class=""/>
+      2:构造方法注入: 
+
+
+
+
+## 【了解】 注入Set属性的值
+
+	<property name="unorderedData">
+		<set>
+			<value>Beijing</value>
+			<value>Shanghai</value>
+			<value>Guangzhou</value>
+		</set>
+	</property>
+
+## 【了解】 注入Map属性的值
+
+	<property name="session">
+		<map>
+			<entry key="username" value="admin" />
+			<entry key="password" value="123456" />
+			<entry key="group" value="administrator" />
+		</map>
+	</property>
+
+## 【理解】 注入Properties属性的值
+
+使用`<util:properties>`节点就可以直接读取`.properties`类型的配置文件：
+
+	<!-- util:properties用于读取.properties配置文件 -->
+	<!-- util:properties节点的本质也是一个bean节点 -->
+	<!-- id：bean id -->
+	<!-- location：配置文件的路径，以classpath:作为前缀 -->
+	<util:properties
+		id="dbConfig"
+		location="classpath:db.properties" />
+
+然后，在为属性注入时，参考注入对象型的值的做法即可：
+	
+	<property 
+		name="dbConfig" 
+		ref="dbConfig" />
+
+
+ 【理解】 Spring表达式
+
+使用Spring表达式，可以在配置Spring时，获取另一个bean的某个属性的值！
+
+Spring表达式的基本语法格式为：
+
+	#{bean的id.属性名}
+
+配置时，将Spring表达式作为某个`<property>`节点的`value`属性的值即可。
+
+如果通过Spring表达式访问的是另一个bean的List类型或数组类型的属性中的某个元素，则使用的语法：
+
+	#{bean的id.List集合的名称/数组的名称[索引/下标]}
+
+如果通过Spring表达式访问的是另一个bean的Map类型或Properties类型的属性中的某个元素，则使用的语法：
+
+	#{bean的id.Map的名称/Properties的名称.key}
+
+也可以是（不推荐）：
+
+	#{bean的id.Map的名称/Properties的名称.['key']}
+
+另：Spring表达式是基于ONGL表达式的！
+
+
+SpringMVC
+SpringMVC中的相关配置有
+  组件扫描:
+ 
+
+## (1)SpringMVC是什么?
+	是一个用来简化基于MVC架构的web应用程序开发的
+	应用开发框架。
+	注：SpringMVC是Spring框架的一部分。
+## (2)SpringMVC的原理(有哪些重要的组件)
+### 1)五大组件　
+	DispatcherServlet (前端控制器)
+	HandlerMapping  (映射处理器)
+	Controller	(处理器)
+	ModelAndView (视图名和数据)
+	ViewResolver (视图解析器)
+### 2)五大组件的关系
+	a.请求统一发送给DispatcherServlet,它收到请求之后，依据HandlerMapping的配置调用对应的Controller来处理。
+	b.Controller将处理结果封装成ModelAndView,
+	然后发送给DispatcherServlet。
+	c.DispatcherServlet依据ViewResolver的解析，
+	调用对应的视图对象（比如某个jsp）来展现处理结果。
+![](springmvc.png)
+
+## (3)编程步骤
+### step1.导包。(spring-webmvc)
+### step2.添加Spring配置文件。
+### step3.配置DispatcherServlet。
+### step4.写Controller(处理器)。
+### step5.写jsp。
+### step6.配置HandlerMapping和ViewResolver。
+
+
+
+# 4.拦截器
+## (1)什么是拦截器?
+	DispatcherServlet收到请求之后，如果有拦截器，
+	会先调用拦截器，然后再调用处理器(Controller)。
+	注:
+		a.过滤器属于Servlet规范，而拦截器属于
+		Spring框架。
+		b.过滤器用于拦截Servlet容器的调用过程；
+		而拦截器用于拦截DispatcherServlet的调用过程。
+![](interceptor.png)
+
+## (2)如何写拦截器?
+	step1.写一个java类，实现HandlerInterceptor
+		接口。
+	step2.在接口方法当中，实现拦截处理逻辑。
+	step3.配置拦截器。(在Spring配置文件当中配置)。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/~~~~~~~~~~~~~~~~~~~~~~~~~~/
+SSM(Spring+SpringMVC+MyBatis)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

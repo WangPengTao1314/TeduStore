@@ -1,0 +1,18 @@
+package cn.tedu.store.service.ex;
+
+public class PasswordNotMatchException extends RuntimeException{
+
+	private static final long serialVersionUID = 1L;
+
+	public PasswordNotMatchException() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public PasswordNotMatchException(String message) {
+		super(message);
+		// TODO Auto-generated constructor stub
+	}
+	
+
+}
